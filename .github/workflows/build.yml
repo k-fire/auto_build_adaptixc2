@@ -30,7 +30,7 @@ jobs:
         tar -czf adaptixc2_build.tar.gz *
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: adaptixc2_build
         path: AdaptixC2/dist/adaptixc2_build.tar.gz
