@@ -1,4 +1,3 @@
-
 name: Build and Release
 
 on:
@@ -7,20 +6,16 @@ on:
       - 'v*'
 
 jobs:
-  build:
+  build-and-release:
     runs-on: ubuntu-latest
     container:
-      image: centos:7
+      image: debian:10
 
     steps:
-    - name: Configure YUM mirrors and install dependencies
+    - name: Install dependencies
       run: |
-        curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
-        yum clean all
-        yum makecache
-        yum -y install epel-release
-        yum -y groupinstall "Development Tools"
-        yum -y install sudo git curl tar gcc make cmake openssl-devel glibc-devel libcap mingw64-gcc mingw64-gcc-c++
+        apt-get update
+        apt-get install -y sudo git curl tar gcc make cmake libssl-dev libc6-dev libcap2-bin mingw-w64
 
     - name: Install Go 1.24.3
       run: |
@@ -30,8 +25,14 @@ jobs:
         export PATH=$PATH:/usr/local/go/bin
         go version
 
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
     - name: Clone AdaptixC2
-      run: git clone https://github.com/Adaptix-Framework/AdaptixC2.git
+      run: |
+        git clone https://github.com/Adaptix-Framework/AdaptixC2.git
 
     - name: Build server and extenders
       run: |
@@ -41,23 +42,8 @@ jobs:
         make extenders
 
     - name: Print glibc version
-      run: ldd --version | head -n 1
-
-  release:
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
-    - name: Download build artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: adaptix-dist
-        path: AdaptixC2/dist
+      run: |
+        ldd --version | head -n 1
 
     - name: Package dist folder
       run: |
