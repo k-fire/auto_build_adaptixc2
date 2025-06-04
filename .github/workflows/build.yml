@@ -1,3 +1,4 @@
+
 name: Build and Release
 
 on:
@@ -6,7 +7,7 @@ on:
       - 'v*'
 
 jobs:
-  build-and-release:
+  build:
     runs-on: ubuntu-latest
     container:
       image: centos:7
@@ -14,20 +15,11 @@ jobs:
     steps:
     - name: Configure YUM mirrors and install dependencies
       run: |
-        # 备份原有 repo 文件
-        mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.bak || true
-    
-        # 使用阿里云镜像
         curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
-    
-        # 清理缓存并更新
         yum clean all
         yum makecache
-    
-        # 安装依赖
         yum -y groupinstall "Development Tools"
         yum -y install sudo git curl tar gcc make cmake openssl-devel glibc-devel libcap mingw64-gcc
-
 
     - name: Install Go 1.24.3
       run: |
@@ -43,8 +35,7 @@ jobs:
         fetch-depth: 0
 
     - name: Clone AdaptixC2
-      run: |
-        git clone https://github.com/Adaptix-Framework/AdaptixC2.git
+      run: git clone https://github.com/Adaptix-Framework/AdaptixC2.git
 
     - name: Build server and extenders
       run: |
@@ -53,16 +44,29 @@ jobs:
         make server
         make extenders
 
-    - name: Print glibc version
-      run: |
-        ldd --version | head -n 1
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: adaptix-dist
+        path: AdaptixC2/dist
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: adaptix-dist
+        path: dist
 
     - name: Package dist folder
       run: |
-        cd AdaptixC2/dist
+        cd dist
         tar -czf adaptix.server.linux-amd64.tar.gz *
 
     - name: Create GitHub Release and upload artifact
       uses: softprops/action-gh-release@v2
       with:
-        files: AdaptixC2/dist/adaptix.server.linux-amd64.tar.gz
+        files: dist/adaptix.server.linux-amd64.tar.gz
