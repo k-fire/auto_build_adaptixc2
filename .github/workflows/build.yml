@@ -6,16 +6,19 @@ on:
       - 'v*'
 
 jobs:
-  build-and-release:
+  build:
     runs-on: ubuntu-latest
     container:
-      image: debian:10
+      image: centos:7
 
     steps:
-    - name: Install dependencies
+    - name: Configure YUM mirrors and install dependencies
       run: |
-        apt-get update
-        apt-get install -y sudo git curl tar gcc make cmake libssl-dev libc6-dev libcap2-bin mingw-w64
+        curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+        yum clean all
+        yum makecache
+        yum -y groupinstall "Development Tools"
+        yum -y install sudo git curl tar gcc make cmake openssl-devel glibc-devel libcap mingw64-gcc mingw64-gcc-c++ mingw64-binutils
 
     - name: Install Go 1.24.3
       run: |
@@ -25,32 +28,34 @@ jobs:
         export PATH=$PATH:/usr/local/go/bin
         go version
 
+    - name: Clone AdaptixC2 and build
+      run: |
+        export PATH=$PATH:/usr/local/go/bin
+        git clone https://github.com/Adaptix-Framework/AdaptixC2.git
+        cd AdaptixC2
+        make server
+        make extenders
+        mkdir -p $GITHUB_WORKSPACE/dist
+        cp -r dist/* $GITHUB_WORKSPACE/dist/
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
-    - name: Clone AdaptixC2
-      run: |
-        git clone https://github.com/Adaptix-Framework/AdaptixC2.git
-
-    - name: Build server and extenders
-      run: |
-        export PATH=$PATH:/usr/local/go/bin
-        cd AdaptixC2
-        make server
-        make extenders
-
-    - name: Print glibc version
-      run: |
-        ldd --version | head -n 1
-
     - name: Package dist folder
       run: |
-        cd AdaptixC2/dist
+        cd $GITHUB_WORKSPACE/dist
         tar -czf adaptix.server.linux-amd64.tar.gz *
 
     - name: Create GitHub Release and upload artifact
       uses: softprops/action-gh-release@v2
       with:
-        files: AdaptixC2/dist/adaptix.server.linux-amd64.tar.gz
+        files: ${{ github.workspace }}/dist/adaptix.server.linux-amd64.tar.gz
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
