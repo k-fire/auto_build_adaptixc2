@@ -21,7 +21,7 @@ jobs:
 
     - name: Install dependencies (including sudo)
       run: |
-        apt-get install -y sudo git curl tar gcc make cmake libssl-dev libc6-dev
+        apt-get install -y sudo git curl tar gcc make cmake libssl-dev libc6-dev libcap2-bin
 
     - name: Install Go 1.24.3
       run: |
