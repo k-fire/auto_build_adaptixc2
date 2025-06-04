@@ -9,18 +9,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: debian:9
+      image: debian:10
 
     steps:
-    - name: Use Debian 9 official archive sources
+    - name: Install dependencies
       run: |
-        echo "deb http://archive.debian.org/debian stretch main contrib non-free" > /etc/apt/sources.list
-        echo "deb http://archive.debian.org/debian-security stretch/updates main contrib non-free" >> /etc/apt/sources.list
-        echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until
         apt-get update
-
-    - name: Install dependencies (including sudo)
-      run: |
         apt-get install -y sudo git curl tar gcc make cmake libssl-dev libc6-dev libcap2-bin mingw-w64
 
     - name: Install Go 1.24.3
@@ -31,11 +25,9 @@ jobs:
         export PATH=$PATH:/usr/local/go/bin
         go version
 
-
     - name: Clone AdaptixC2 and run pre-install
       run: |
         git clone https://github.com/Adaptix-Framework/AdaptixC2.git
-
 
     - name: Build server and extenders
       run: |
