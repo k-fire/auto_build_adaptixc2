@@ -48,9 +48,9 @@ jobs:
     - name: Package dist folder
       run: |
         cd AdaptixC2/dist
-        tar -czf adaptixc2_build.tar.gz *
+        tar -czf adaptix_c2_linux-amd64.tar.gz *
 
     - name: Create GitHub Release and upload artifact
       uses: softprops/action-gh-release@v2
       with:
-        files: AdaptixC2/dist/adaptixc2_build.tar.gz
+        files: AdaptixC2/dist/adaptix_c2_linux-amd64.tar.gz
