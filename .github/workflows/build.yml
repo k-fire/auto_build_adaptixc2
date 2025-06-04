@@ -16,20 +16,33 @@ jobs:
       run: |
         echo "deb http://archive.debian.org/debian stretch main contrib non-free" > /etc/apt/sources.list
         echo "deb http://archive.debian.org/debian-security stretch/updates main contrib non-free" >> /etc/apt/sources.list
-        # 禁用验证（因为 archive.debian.org 上的签名已过期）
         echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until
         apt-get update
 
     - name: Install dependencies (including sudo)
       run: |
-        apt-get install -y sudo git curl tar gcc make libc6-dev
+        apt-get install -y sudo git curl tar gcc make cmake libssl-dev libc6-dev
+
+    - name: Install Go 1.24.3
+      run: |
+        curl -LO https://go.dev/dl/go1.24.3.linux-amd64.tar.gz
+        tar -C /usr/local -xzf go1.24.3.linux-amd64.tar.gz
+        echo "export PATH=$PATH:/usr/local/go/bin" >> /etc/profile
+        export PATH=$PATH:/usr/local/go/bin
+        go version
+
 
     - name: Clone AdaptixC2 and run pre-install
       run: |
         git clone https://github.com/Adaptix-Framework/AdaptixC2.git
+
+
+    - name: Build server and extenders
+      run: |
+        export PATH=$PATH:/usr/local/go/bin
         cd AdaptixC2
-        chmod +x pre_install_linux.sh
-        ./pre_install_linux.sh
+        make server
+        make extenders
 
     - name: Print glibc version
       run: |
