@@ -1,0 +1,36 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: debian:9
+
+    steps:
+    - name: Install dependencies
+      run: |
+        apt-get update
+        apt-get install -y git curl tar gcc make libc6-dev
+
+    - name: Clone AdaptixC2
+      run: |
+        git clone https://github.com/Adaptix-Framework/AdaptixC2.git
+        cd AdaptixC2
+        chmod +x pre_install_linux.sh
+        ./pre_install_linux.sh
+
+    - name: Package dist folder
+      run: |
+        cd AdaptixC2/dist
+        tar -czf adaptixc2_build.tar.gz *
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: adaptixc2_build
+        path: AdaptixC2/dist/adaptixc2_build.tar.gz
