@@ -9,13 +9,14 @@ jobs:
   build-and-release:
     runs-on: ubuntu-latest
     container:
-      image: debian:10
+      image: centos:7
 
     steps:
     - name: Install dependencies
       run: |
-        apt-get update
-        apt-get install -y sudo git curl tar gcc make cmake libssl-dev libc6-dev libcap2-bin mingw-w64
+        yum -y update
+        yum -y groupinstall "Development Tools"
+        yum -y install sudo git curl tar gcc make cmake openssl-devel glibc-devel libcap mingw64-gcc
 
     - name: Install Go 1.24.3
       run: |
