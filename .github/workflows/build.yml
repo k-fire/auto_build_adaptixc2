@@ -12,9 +12,16 @@ jobs:
       image: debian:9
 
     steps:
+    - name: Use Debian 9 official archive sources
+      run: |
+        echo "deb http://archive.debian.org/debian stretch main contrib non-free" > /etc/apt/sources.list
+        echo "deb http://archive.debian.org/debian-security stretch/updates main contrib non-free" >> /etc/apt/sources.list
+        # 禁用验证（因为 archive.debian.org 上的签名已过期）
+        echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until
+        apt-get update
+
     - name: Install dependencies
       run: |
-        apt-get update
         apt-get install -y git curl tar gcc make libc6-dev
 
     - name: Clone AdaptixC2
