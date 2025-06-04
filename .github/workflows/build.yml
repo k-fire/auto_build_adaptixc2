@@ -18,8 +18,9 @@ jobs:
         curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
         yum clean all
         yum makecache
+        yum -y install epel-release
         yum -y groupinstall "Development Tools"
-        yum -y install sudo git curl tar gcc make cmake openssl-devel glibc-devel libcap mingw64-gcc
+        yum -y install sudo git curl tar gcc make cmake openssl-devel glibc-devel libcap mingw64-gcc mingw64-gcc-c++
 
     - name: Install Go 1.24.3
       run: |
@@ -39,11 +40,8 @@ jobs:
         make server
         make extenders
 
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: adaptix-dist
-        path: AdaptixC2/dist
+    - name: Print glibc version
+      run: ldd --version | head -n 1
 
   release:
     runs-on: ubuntu-latest
@@ -59,14 +57,14 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: adaptix-dist
-        path: dist
+        path: AdaptixC2/dist
 
     - name: Package dist folder
       run: |
-        cd dist
+        cd AdaptixC2/dist
         tar -czf adaptix.server.linux-amd64.tar.gz *
 
     - name: Create GitHub Release and upload artifact
       uses: softprops/action-gh-release@v2
       with:
-        files: dist/adaptix.server.linux-amd64.tar.gz
+        files: AdaptixC2/dist/adaptix.server.linux-amd64.tar.gz
