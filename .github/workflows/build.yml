@@ -29,11 +29,6 @@ jobs:
         export PATH=$PATH:/usr/local/go/bin
         go version
 
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
     - name: Clone AdaptixC2
       run: git clone https://github.com/Adaptix-Framework/AdaptixC2.git
 
@@ -55,6 +50,11 @@ jobs:
     needs: build
 
     steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
     - name: Download build artifacts
       uses: actions/download-artifact@v4
       with:
