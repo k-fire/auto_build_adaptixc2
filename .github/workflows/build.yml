@@ -6,59 +6,51 @@ on:
       - 'v*'
 
 jobs:
-  build:
+  build-and-release:
     runs-on: ubuntu-latest
     container:
       image: debian:10
 
     steps:
-      - name: Install dependencies
-        run: |
-          apt-get update
-          apt-get install -y sudo git curl tar gcc make cmake libssl-dev libc6-dev libcap2-bin mingw-w64
+    - name: Install dependencies
+      run: |
+        apt-get update
+        apt-get install -y sudo git curl tar gcc make cmake libssl-dev libc6-dev libcap2-bin mingw-w64
 
-      - name: Install Go 1.24.3
-        run: |
-          curl -LO https://go.dev/dl/go1.24.3.linux-amd64.tar.gz
-          tar -C /usr/local -xzf go1.24.3.linux-amd64.tar.gz
-          echo "export PATH=$PATH:/usr/local/go/bin" >> /etc/profile
-          export PATH=$PATH:/usr/local/go/bin
-          go version
+    - name: Install Go 1.24.3
+      run: |
+        curl -LO https://go.dev/dl/go1.24.3.linux-amd64.tar.gz
+        tar -C /usr/local -xzf go1.24.3.linux-amd64.tar.gz
+        echo "export PATH=$PATH:/usr/local/go/bin" >> /etc/profile
+        export PATH=$PATH:/usr/local/go/bin
+        go version
 
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-      - name: Clone AdaptixC2
-        run: |
-          git clone https://github.com/Adaptix-Framework/AdaptixC2.git
+    - name: Clone AdaptixC2
+      run: |
+        git clone https://github.com/Adaptix-Framework/AdaptixC2.git
 
-      - name: Build server and extenders
-        run: |
-          export PATH=$PATH:/usr/local/go/bin
-          cd AdaptixC2
-          make server
-          make extenders
+    - name: Build server and extenders
+      run: |
+        export PATH=$PATH:/usr/local/go/bin
+        cd AdaptixC2
+        make server
+        make extenders
 
-      - name: Print glibc version
-        run: |
-          ldd --version | head -n 1
+    - name: Print glibc version
+      run: |
+        ldd --version | head -n 1
 
-      - name: Package dist folder to shared workspace
-        run: |
-          cd AdaptixC2/dist
-          tar -czf /github/workspace/adaptix.server.linux-amd64.tar.gz *
+    - name: Package dist folder
+      run: |
+        cd AdaptixC2/dist
+        tar -czf adaptix.server.linux-amd64.tar.gz *
 
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Upload release artifact
-        uses: softprops/action-gh-release@v2
-        with:
-          files: adaptix.server.linux-amd64.tar.gz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Create GitHub Release and upload artifact
+      uses: softprops/action-gh-release@v2
+      with:
+        files: AdaptixC2/dist/adaptix.server.linux-amd64.tar.gz
