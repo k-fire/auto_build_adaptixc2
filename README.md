@@ -17,6 +17,7 @@ sudo ln -s /usr/lib/go-1.23/bin/go /usr/local/bin/go
 // echo "export PATH=$PATH:/usr/local/go/bin" >> /etc/profile
 // export PATH=$PATH:/usr/local/go/bin
 // go version
+// go env -w  GOPROXY=https://goproxy.cn,direct
 ```
 而且要求传输速度，否则客户端生成时容易超时
 
