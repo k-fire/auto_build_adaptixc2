@@ -17,10 +17,10 @@ jobs:
         apt-get update
         apt-get install -y sudo git curl tar gcc make cmake libssl-dev libc6-dev libcap2-bin mingw-w64
 
-    - name: Install Go 1.24.3
+    - name: Install Go 1.24.4
       run: |
-        curl -LO https://go.dev/dl/go1.24.3.linux-amd64.tar.gz
-        tar -C /usr/local -xzf go1.24.3.linux-amd64.tar.gz
+        curl -LO https://go.dev/dl/go1.24.4.linux-amd64.tar.gz
+        tar -C /usr/local -xzf go1.24.4.linux-amd64.tar.gz
         echo "export PATH=$PATH:/usr/local/go/bin" >> /etc/profile
         export PATH=$PATH:/usr/local/go/bin
         go version
